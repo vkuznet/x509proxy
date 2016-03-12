@@ -132,4 +132,5 @@ func x509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert tls.Certificate, err er
 		}
 	}
 	cert.PrivateKey = key
+	return
 }
