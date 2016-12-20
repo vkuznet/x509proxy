@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/vkuznet/x509proxy.svg?branch=master)](https://travis-ci.org/vkuznet/x509proxy)
 [![GoDoc](https://godoc.org/github.com/vkuznet/x509proxy?status.svg)](https://godoc.org/github.com/vkuznet/x509proxy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vkuznet/x509proxy)](https://goreportcard.com/report/github.com/vkuznet/x509proxy)
 
 Package to handle X509 proxy certificates.
 
