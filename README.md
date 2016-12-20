@@ -67,4 +67,6 @@ func HttpClient() (client *http.Client) {
 
 // create global HTTP client and re-use it through the code
 var client = HttpClient()
+
+// now you http client is ready to use X509 proxy
 ```
