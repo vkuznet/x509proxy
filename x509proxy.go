@@ -1,12 +1,9 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: x509 proxy certificate parser utilities
- * Created    : Wed Mar 20 13:29:48 EDT 2013
- * License    : MIT
- *
- */
 package x509proxy
+
+// Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
+// Description: x509 proxy certificate parser utilities
+// Created    : Wed Mar 20 13:29:48 EDT 2013
+// License    : MIT
 
 import (
 	"crypto/rsa"
