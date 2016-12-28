@@ -42,7 +42,7 @@ func getData(mkey string, block []byte) (keyBlock []byte) {
 		if string(block[i]) == "\n" {
 			test, _ := regexp.MatchString(mkey, string(out))
 			if test {
-				keyMatch += 1
+				keyMatch++
 			}
 			if keyMatch > 0 {
 				keyBlock = appendByte(keyBlock, out)
