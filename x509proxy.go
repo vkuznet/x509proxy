@@ -13,6 +13,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"regexp"
+	"time"
 )
 
 // Helper function to append bytes to existing slice
@@ -58,6 +59,14 @@ func getData(mkey string, block []byte) (keyBlock []byte) {
 	return
 }
 
+// helper function to check user certficate validity
+func isValid(cert *x509.Certificate) bool {
+	notAfter := cert.NotAfter.Unix()
+	notBefore := cert.NotBefore.Unix()
+	rightNow := time.Now().Unix()
+	return notBefore < rightNow && rightNow < notAfter
+}
+
 // LoadX509Proxy reads and parses a chained proxy file
 // which contains PEM encoded data. It returns X509KeyPair.
 // It is slightly modified version of tls.LoadX509Proxy function with addition
@@ -95,6 +104,14 @@ func x509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert tls.Certificate, err er
 		if err2 == nil {
 			// assign the Leaf
 			cert.Leaf = certs[0]
+
+			for _, c := range certs {
+				if !isValid(c) {
+					err = errors.New("Certificate is expired")
+					return
+				}
+			}
+
 		}
 		if certDERBlock.Type == "CERTIFICATE" {
 			cert.Certificate = append(cert.Certificate, certDERBlock.Bytes)
