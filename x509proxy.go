@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"time"
 )
@@ -72,19 +73,21 @@ func isValid(cert *x509.Certificate) bool {
 // It is slightly modified version of tls.LoadX509Proxy function with addition
 // of custom parse function (getData) for provided proxy file
 func LoadX509Proxy(proxyFile string) (cert tls.Certificate, err error) {
-	// read CERTIFICATE blocks
-	certBlock, err := ioutil.ReadFile(proxyFile)
+	file, err := os.Open(proxyFile)
 	if err != nil {
 		return
 	}
-	certPEMBlock := getData("CERTIFICATE", certBlock)
+	defer file.Close()
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return
+	}
+
+	// read CERTIFICATE blocks
+	certPEMBlock := getData("CERTIFICATE", data)
 
 	// read KEY block
-	keyBlock, err := ioutil.ReadFile(proxyFile)
-	if err != nil {
-		return
-	}
-	keyPEMBlock := getData("KEY", keyBlock)
+	keyPEMBlock := getData("KEY", data)
 
 	return x509KeyPair(certPEMBlock, keyPEMBlock)
 }
