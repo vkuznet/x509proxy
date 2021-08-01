@@ -1,3 +1,3 @@
 module github.com/vkuznet/x509proxy
 
-go 1.13
+go 1.16

@@ -11,7 +11,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"time"
@@ -78,7 +78,7 @@ func LoadX509Proxy(proxyFile string) (cert tls.Certificate, err error) {
 		return
 	}
 	defer file.Close()
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return
 	}
