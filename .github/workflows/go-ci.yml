@@ -26,9 +26,13 @@ jobs:
       run: |
         go test -v .
 
+    - name: Coverage test
+      run: |
+        go tool cover -html=coverage.out ./...
+
     - name: Coveralls
       uses: coverallsapp/github-action@v2
+      with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.out  # Ensure this is the correct path
 
-    - name: Coverage
-      run: |
-        go tool cover -html=coverage.out
