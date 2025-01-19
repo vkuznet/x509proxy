@@ -25,7 +25,10 @@ jobs:
     - name: Test
       run: |
         go test -v .
-        go tool cover -html=coverage.out
 
     - name: Coveralls
       uses: coverallsapp/github-action@v2
+
+    - name: Coverage
+      run: |
+        go tool cover -html=coverage.out
