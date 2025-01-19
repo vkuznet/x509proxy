@@ -68,6 +68,46 @@ func isValid(cert *x509.Certificate) bool {
 	return notBefore < rightNow && rightNow < notAfter
 }
 
+// tlsToX509 converts a tls.Certificate to an x509.Certificate
+func tlsToX509(tlsCert tls.Certificate) ([]*x509.Certificate, error) {
+	var x509Certs []*x509.Certificate
+
+	for _, certDER := range tlsCert.Certificate {
+		cert, err := x509.ParseCertificate(certDER)
+		if err != nil {
+			return nil, err
+		}
+		x509Certs = append(x509Certs, cert)
+	}
+
+	return x509Certs, nil
+}
+
+// GetTlsCert parses a single certificate from the given ASN.1 DER data and X509 proxy
+func GetTlsCert(der []byte) (*tls.Certificate, error) {
+	// read CERTIFICATE blocks
+	certPEMBlock := getData("CERTIFICATE", der)
+
+	// read KEY block
+	keyPEMBlock := getData("KEY", der)
+
+	tlsCert, err := x509KeyPair(certPEMBlock, keyPEMBlock)
+	return &tlsCert, err
+}
+
+// ParseCertificate parses a single certificate from the given ASN.1 DER data and X509 proxy
+func ParseCertificate(der []byte) (*x509.Certificate, error) {
+	// read CERTIFICATE blocks
+	certPEMBlock := getData("CERTIFICATE", der)
+
+	// read KEY block
+	keyPEMBlock := getData("KEY", der)
+
+	tlsCert, err := x509KeyPair(certPEMBlock, keyPEMBlock)
+	x509Certs, err := tlsToX509(tlsCert)
+	return x509Certs[0], err
+}
+
 // LoadX509Proxy reads and parses a chained proxy file
 // which contains PEM encoded data. It returns X509KeyPair.
 // It is slightly modified version of tls.LoadX509Proxy function with addition
@@ -92,6 +132,38 @@ func LoadX509Proxy(proxyFile string) (cert tls.Certificate, err error) {
 	return x509KeyPair(certPEMBlock, keyPEMBlock)
 }
 
+// LoadX509KeyPair parses a public/private key pair from a pair of PEM encoded
+// data.  It is slightly modified version of tls.X509Proxy where Leaf
+// assignment is made to make proxy certificate works.
+func LoadX509KeyPair(serverCrt, serverKey string) (cert tls.Certificate, err error) {
+	emptyCert := tls.Certificate{}
+	// read CERTIFICATE blocks from cert file
+	file, err := os.Open(serverCrt)
+	if err != nil {
+		return emptyCert, err
+	}
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return emptyCert, err
+	}
+	certPEMBlock := getData("CERTIFICATE", data)
+
+	// read KEY block from key file
+	file, err = os.Open(serverKey)
+	if err != nil {
+		return emptyCert, err
+	}
+	defer file.Close()
+	data, err = io.ReadAll(file)
+	if err != nil {
+		return emptyCert, err
+	}
+	keyPEMBlock := getData("KEY", data)
+
+	return x509KeyPair(certPEMBlock, keyPEMBlock)
+}
+
 // Parse a public/private key pair from a pair of PEM encoded
 // data.  It is slightly modified version of tls.X509Proxy where Leaf
 // assignment is made to make proxy certificate works.
@@ -106,7 +178,9 @@ func x509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert tls.Certificate, err er
 		certs, err2 := x509.ParseCertificates(certDERBlock.Bytes)
 		if err2 == nil {
 			// assign the Leaf
-			cert.Leaf = certs[0]
+			if len(certs) > 0 {
+				cert.Leaf = certs[0]
+			}
 
 			for _, c := range certs {
 				if !isValid(c) {
